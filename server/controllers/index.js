@@ -10,6 +10,11 @@ module.exports = {
     // Ditto as above
     get: function (req, res) {},
     post: function (req, res) {}
+  },
+
+  rooms: {
+    get: function (req, res) {},
+    post: function (req, res) {}
   }
 };
 
