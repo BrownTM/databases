@@ -20,9 +20,9 @@ describe('Persistent Node Chat Server', function() {
 
     /* Empty the db table before each test so that multiple tests
      * (or repeated runs of the tests) won't screw each other up: */
-    dbConnection.query('truncate ' + tablename, done);
-    dbConnection.query('truncate ' + 'users', done);
-    dbConnection.query('truncate ' + 'rooms', done);
+    dbConnection.query('truncate ' + tablename);
+    dbConnection.query('DELETE FROM users');
+    dbConnection.query('DELETE FROM rooms', done);
   });
 
   afterEach(function() {
@@ -42,7 +42,7 @@ describe('Persistent Node Chat Server', function() {
         uri: 'http://127.0.0.1:3000/classes/messages',
         json: {
           username: 'Valjean',
-          message: 'In mercy\'s name, three days is all I need.',
+          text: 'In mercy\'s name, three days is all I need.',
           roomname: 'Hello'
         }
       }, function () {
@@ -67,19 +67,92 @@ describe('Persistent Node Chat Server', function() {
     });
   });
 
+  // test classes/users
+  it('Should get and post to classes/users', function(done) {
+    request({
+      method: 'POST',
+      uri: 'http://127.0.0.1:3000/classes/users',
+      json: { username: 'Valjean' }
+    }, function () {
+      dbConnection.query('SELECT * FROM users', (err, results) => {
+        expect(results.length).to.equal(1);
+        expect(results[0].username).to.equal('Valjean');
+        done();
+      });
+    });
+  });
+  
+  // test classes/rooms
+  it('Should get and post to classes/rooms', function(done) {
+    request({
+      method: 'POST',
+      uri: 'http://127.0.0.1:3000/classes/rooms',
+      json: { roomname: 'lobby' }
+    }, function () {
+      request('http://127.0.0.1:3000/classes/rooms', function (err, response, body) {
+        const roomlist = JSON.parse(body);
+        expect(roomlist.results[0].roomname).to.equal('lobby');
+        done();
+      });
+    });
+  });
+
+  // test no duplicate usernames
+  it('Should not insert duplicate userames', function(done) {
+    request({
+      method: 'POST',
+      uri: 'http://127.0.0.1:3000/classes/users',
+      json: { username: 'Valjean' }
+    }, function() {
+      request({
+        method: 'POST',
+        uri: 'http://127.0.0.1:3000/classes/users',
+        json: { username: 'Valjean' }
+      }, function() {
+        dbConnection.query('SELECT * FROM users', (err, results) => {
+          expect(results.length).to.equal(1);
+          expect(results[0].username).to.equal('Valjean');
+          done();
+        });
+      });
+    });
+  });
+
+  // test no duplicate roomnames
+  it('Should not insert duplicate roomnames', function(done) {
+    request({
+      method: 'POST',
+      uri: 'http://127.0.0.1:3000/classes/rooms',
+      json: { roomname: 'lobby' }
+    }, () => {
+      request({
+        method: 'POST',
+        uri: 'http://127.0.0.1:3000/classes/rooms',
+        json: { roomname: 'lobby' }
+      }, () => {
+        request('http://127.0.0.1:3000/classes/rooms', function (err, response, body) {
+          const roomlist = JSON.parse(body);
+          expect(roomlist.results.length).to.equal(1);
+          expect(roomlist.results[0].roomname).to.equal('lobby');
+          done();
+        });
+      });
+    });
+  });
+
   it('Should output all messages from the DB', function(done) {
     // Let's insert a message into the db
     // INSERT INTO rooms
     // INSERT INTO users
     // INSERT INTO messages
-    var queryString = 'INSERT INTO messages (user_id, room_id, text) VALUES ((SELECT id FROM users WHERE name = ?), (SELECT id FROM rooms WHERE name = ?), ?)';
+    var queryString = 'INSERT INTO messages (user_id, room_id, text) VALUES ((SELECT id FROM users WHERE username = ?), (SELECT id FROM rooms WHERE roomname = ?), ?)';
     var queryArgs = ['test', 'main', 'Men like you can never change!'];
     // TODO - The exact query string and query args to use
     // here depend on the schema you design, so I'll leave
     // them up to you. */
-    dbConnection.query('INSERT INTO rooms (name) VALUES (?)', 'main', function(err) {
+    dbConnection.query('INSERT IGNORE INTO rooms (roomname) VALUES (?)', 'main', function(err) {
       if (err) { throw err; }
-      dbConnection.query('INSERT INTO users (name) VALUES (?)', 'test', function(err) {
+      dbConnection.query('INSERT IGNORE INTO users (username) VALUES (?)', 'test', function(err) {
         if (err) { throw err; }
         dbConnection.query(queryString, queryArgs, function(err) {
           if (err) { throw err; }
@@ -88,9 +161,8 @@ describe('Persistent Node Chat Server', function() {
           // the message we just inserted:
           request('http://127.0.0.1:3000/classes/messages', function(error, response, body) {
             var messageLog = JSON.parse(body);
-            console.log('MESSAGELOG', messageLog);
-            expect(messageLog[0].text).to.equal('Men like you can never change!');
-            expect(messageLog[0].roomname).to.equal('main');
+            expect(messageLog.results[0].text).to.equal('Men like you can never change!');
+            expect(messageLog.results[0].roomname).to.equal('main');
             done();
           });
         });

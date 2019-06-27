@@ -1,6 +1,6 @@
 var Parse = {
 
-  server: `http://parse.${window.CAMPUS}.hackreactor.com/chatterbox/classes/messages`,
+  server: 'http://localhost:3000/classes/messages', //`http://parse.${window.CAMPUS}.hackreactor.com/chatterbox/classes/messages`, ,
 
   create: function(message, successCB, errorCB = null) {
     // todo: save a message to the server
