@@ -2,20 +2,41 @@ var db = require('../db');
 
 module.exports = {
   messages: {
-    get: () => {
-      return db.Message.findAll({include: [db.Room, db.User]})
-        .then((messages) => {
-          return messages.map((message) => {
-            return {
-              username: message.User.username,
-              text: message.text,
-              textcolor: message.User.textcolor,
-              roomname: message.Room.roomname,
-              createdAt: message.createdAt,
-              updatedAt: message.updatedAt
-            }
+    get: (params) => {
+      if (params.searchUsername) {
+        return module.exports.users.get({username: params.searchUsername})
+          .then((user) => {
+            return db.Message.findAll({include: [db.Room, db.User], where: {user_id: user.id}})
+              .then((messages) => {
+                return messages.map((message) => {
+                  return {
+                    username: message.User.username,
+                    text: message.text,
+                    textcolor: message.User.textcolor,
+                    roomname: message.Room.roomname,
+                    createdAt: message.createdAt,
+                    updatedAt: message.updatedAt
+                  }
+                });
+              });
           })
-        });
+      } else if (params.searchMessage) {
+        return db.Message.findAll({include: [db.Room, db.User], where: {text: `%s${req.searchMessage}%s`}})
+      } else {
+        return db.Message.findAll({include: [db.Room, db.User], logging: false})
+          .then((messages) => {
+            return messages.map((message) => {
+              return {
+                username: message.User.username,
+                text: message.text,
+                textcolor: message.User.textcolor,
+                roomname: message.Room.roomname,
+                createdAt: message.createdAt,
+                updatedAt: message.updatedAt
+              }
+            })
+          });
+      }
     }, // a function which produces all the messages
     post: async (message) => {
       let user = await db.User.find({where: { username: message.username } });
@@ -33,9 +54,16 @@ module.exports = {
 
   users: {
     // Ditto as above.
-    get: () => db.User.findAll({}),
-    post: (username) => db.User.create({username: username}),
-    put: (textcolor) => db.User.update({textcolor})
+    get: (user) => {
+      if(!user.username) {
+        return db.User.findAll({});
+      } else {
+        return db.User.find({where: {username: user.username}});
+      }
+
+    },
+    post: (username) => db.User.create({username: username}, {ignore: true}),
+    put: (user) => db.User.update({textcolor: user.textcolor}, {where: {username: user.username}})
   },
 
   rooms: {

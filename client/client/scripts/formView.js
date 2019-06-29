@@ -1,14 +1,15 @@
 var FormView = {
-
-  $form: $('form'),
+  $form: $('form#send'),
+  $searchForm: $('form#searchSend'),
 
   //placeholder variable to store what room we're currently in
   //$select changes current room
   currentRoom: 'lobby',
 
-  initialize: function() {
+  initialize: function(userinfo) {
     FormView.$form.on('submit', FormView.handleSubmit);
-    //Thérèse: reference your code on your computer for what is supposed to go here. it's supposed to be about #rooms
+    $('#colors .textcolor').on('change', FormView.handleTextcolorChange);
+    $(`.textcolor option[value=${userinfo.textcolor}]`).attr('selected', 'selected');
   },
 
   handleSubmit: function(event) {
@@ -35,5 +36,12 @@ var FormView = {
 
   handleTextcolorChange: function(event) {
     event.preventDefault();
-  },
+
+    var user = {
+      username: App.username,
+      textcolor: event.target.value
+    };
+
+    Parse.updateUser(user);
+  }
 };

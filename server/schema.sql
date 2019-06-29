@@ -13,26 +13,26 @@ USE chat;
 
 -- ---
 -- Table 'users'
--- 
+--
 -- ---
 
 DROP TABLE IF EXISTS `users`;
-		
+
 CREATE TABLE `users` (
   `id` INTEGER NOT NULL AUTO_INCREMENT,
   `username` VARCHAR(255) NOT NULL UNIQUE,
   PRIMARY KEY (`id`)
 );
 
-ALTER TABLE `users` ADD text_color VARCHAR(255);
+ALTER TABLE `users` ADD textcolor VARCHAR(255) DEFAULT "Black";
 
 -- ---
 -- Table 'rooms'
--- 
+--
 -- ---
 
 DROP TABLE IF EXISTS `rooms`;
-		
+
 CREATE TABLE `rooms` (
   `id` INTEGER NOT NULL AUTO_INCREMENT,
   `roomname` VARCHAR(255) NOT NULL UNIQUE,
@@ -41,11 +41,11 @@ CREATE TABLE `rooms` (
 
 -- ---
 -- Table 'messages'
--- 
+--
 -- ---
 
 DROP TABLE IF EXISTS `messages`;
-		
+
 CREATE TABLE `messages` (
   `id` INTEGER NOT NULL AUTO_INCREMENT,
   `user_id` INTEGER NOT NULL,
@@ -57,7 +57,7 @@ CREATE TABLE `messages` (
 );
 
 -- ---
--- Foreign Keys 
+-- Foreign Keys
 -- ---
 
 ALTER TABLE `messages` ADD FOREIGN KEY (user_id) REFERENCES `users` (`id`);

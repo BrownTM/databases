@@ -5,31 +5,21 @@ const User = db.define('User', {
   username: Sequelize.STRING,
   textcolor: Sequelize.STRING,
 }, {
-  timestamps: false
+  timestamps: false,
+  logging: false
 });
 
 const Room = db.define('Room', {
   roomname: Sequelize.STRING,
 }, {
-  timestamps: false
+  timestamps: false,
+  logging: false
 });
 
 const Message = db.define('Message', {
-  'user_id': {
-    type: Sequelize.INTEGER,
-    references: {
-      model: 'users',
-      key: 'id'
-    }
-  },
-  'text': Sequelize.STRING,
-  'room_id': {
-    type: Sequelize.INTEGER,
-    references: {
-      model: 'rooms',
-      key: 'id'
-    }
-  }
+  'text': Sequelize.STRING
+}, {
+  logging: false
 });
 
 User.hasMany(Message, { foreignKey: 'user_id' });

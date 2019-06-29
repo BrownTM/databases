@@ -53,11 +53,15 @@ form {
 }
 
 form input[type=text] {
-    margin-right: 10px;
-    width: 70%;
+    margin-right: 5px;
+    width: 56%;
     font-size: 12px;
     padding: 5px;
 }
+
+/* form input[type=submit] {
+
+} */
 
 .chat {
     padding: 5px;

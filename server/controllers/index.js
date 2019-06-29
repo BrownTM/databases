@@ -3,11 +3,15 @@ var models = require('../models');
 module.exports = {
   messages: {
     get: function (req, res) {
-      models.messages.get()
+      models.messages.get(req.query)
         .then((results) => {
           res.status(200);
           res.type('json');
-          res.send(JSON.stringify({results}));
+          if (req.query.order === '-createdAt') {
+            res.send(JSON.stringify({results: results.sort((a, b) => (new Date(b.createdAt)) - (new Date(a.createdAt)))}));
+          } else {
+            res.send(JSON.stringify({results}));
+          }
         })
         .catch((error) => {
           res.status(500);
@@ -33,7 +37,7 @@ module.exports = {
   users: {
     // Ditto as above
     get: function (req, res) {
-      models.users.get()
+      models.users.get(req.query)
         .then((results) => {
           res.status(200);
           res.type('json');
@@ -45,8 +49,8 @@ module.exports = {
         });
     },
 
-    put: () => {
-      models.users.post(req.body.textcolor)
+    put: function(req, res) {
+      models.users.put(req.body)
         .then((result) => {
           res.status(200);
           res.type('json');
@@ -54,7 +58,8 @@ module.exports = {
         })
         .catch((err) => {
           res.status(500);
-          res.send('Could not post message.');
+          res.send('Could not update user.');
+          console.error(err);
         });
     },
 
@@ -68,6 +73,7 @@ module.exports = {
         .catch((err) => {
           res.status(500);
           res.send('Could not post message.');
+          console.error(err);
         });
     },
   },

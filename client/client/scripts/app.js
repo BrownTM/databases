@@ -6,24 +6,30 @@ var App = {
 
   initialize: function() {
     App.username = window.location.search.substr(10);
+    Parse.readUser(App.username, ((results) => {
+      if (!results.textcolor) {
+        Parse.createUser(App.username);
+        FormView.initialize({textcolor: 'Black'});
+      } else {
+        FormView.initialize(results.results);
+      }
+      RoomsView.initialize();
+      MessagesView.initialize();
 
-    FormView.initialize();
-    RoomsView.initialize();
-    MessagesView.initialize();
-
-    // Fetch initial batch of messages
-    App.startSpinner();
-    App.fetch(App.stopSpinner);
-    setInterval(function() {
-      $('#chats').empty();
-      App.fetch();
-    }, 1000);
+      // Fetch initial batch of messages
+      App.startSpinner();
+      App.fetch(App.stopSpinner);
+      setInterval(function() {
+        $('#chats').empty();
+        App.fetch();
+      }, 1000);
+    }));
 
   },
 
   fetch: function(callback = ()=>{}) {
     Parse.readAll((data) => {
-      console.log(data.results);
+      //console.log(data.results);
       MessagesView.takeInAllMessages(data.results);
       callback();
     });
