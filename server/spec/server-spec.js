@@ -169,4 +169,65 @@ describe('Persistent Node Chat Server', function() {
       }); 
     });
   });
+
+  it('Should output messsages with a username, roomname, and text properties', function(done) {
+    // Let's insert a message into the db
+    // INSERT INTO rooms
+    // INSERT INTO users
+    // INSERT INTO messages
+    var queryString = 'INSERT INTO messages (user_id, room_id, text) VALUES ((SELECT id FROM users WHERE username = ?), (SELECT id FROM rooms WHERE roomname = ?), ?)';
+    var queryArgs = ['test', 'main', 'Men like you can never change!'];
+    // TODO - The exact query string and query args to use
+    // here depend on the schema you design, so I'll leave
+    // them up to you. */
+    dbConnection.query('INSERT IGNORE INTO rooms (roomname) VALUES (?)', 'main', function(err) {
+      if (err) { throw err; }
+      dbConnection.query('INSERT IGNORE INTO users (username) VALUES (?)', 'test', function(err) {
+        if (err) { throw err; }
+        dbConnection.query(queryString, queryArgs, function(err) {
+          if (err) { throw err; }
+
+          // Now query the Node chat server and see if it returns
+          // the message we just inserted:
+          request('http://127.0.0.1:3000/classes/messages', function(error, response, body) {
+            var messageLog = JSON.parse(body);
+            expect(messageLog.results[0].text).to.not.equal(undefined);
+            expect(messageLog.results[0].roomname).to.not.equal(undefined);
+            expect(messageLog.results[0].username).to.not.equal(undefined);
+            done();
+          });
+        });
+      }); 
+    });
+  });
+
+  it('Should output messsages with timestamps "createdAt", and "updatedAt"', function(done) {
+    // Let's insert a message into the db
+    // INSERT INTO rooms
+    // INSERT INTO users
+    // INSERT INTO messages
+    var queryString = 'INSERT INTO messages (user_id, room_id, text) VALUES ((SELECT id FROM users WHERE username = ?), (SELECT id FROM rooms WHERE roomname = ?), ?)';
+    var queryArgs = ['test', 'main', 'Men like you can never change!'];
+    // TODO - The exact query string and query args to use
+    // here depend on the schema you design, so I'll leave
+    // them up to you. */
+    dbConnection.query('INSERT IGNORE INTO rooms (roomname) VALUES (?)', 'main', function(err) {
+      if (err) { throw err; }
+      dbConnection.query('INSERT IGNORE INTO users (username) VALUES (?)', 'test', function(err) {
+        if (err) { throw err; }
+        dbConnection.query(queryString, queryArgs, function(err) {
+          if (err) { throw err; }
+
+          // Now query the Node chat server and see if it returns
+          // the message we just inserted:
+          request('http://127.0.0.1:3000/classes/messages', function(error, response, body) {
+            var messageLog = JSON.parse(body);
+            expect(messageLog.results[0].createdAt).to.not.equal(undefined);
+            expect(messageLog.results[0].updatedAt).to.not.equal(undefined);
+            done();
+          });
+        });
+      }); 
+    });
+  });
 });
