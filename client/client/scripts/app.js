@@ -84,7 +84,7 @@ var App = {
     // every second as its HTML is rewritten
     App.fetch();
     MessagesView.render();
-    //RoomsView.render();
+    RoomsView.render();
     setTimeout(App.refresh, 1000);
   }
 };

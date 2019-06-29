@@ -11,111 +11,45 @@ var db = new Sequelize('chat', 'root', 'passkey');
 /* first define the data structure by giving property names and datatypes
  * See http://sequelizejs.com for other datatypes you can use besides STRING. */
 var User = db.define('User', {
-  // id: {
-  //   type: Sequelize.INTEGER,
-  //   primaryKey: true
-  // },
-  username: Sequelize.STRING
+  username: Sequelize.STRING,
 }, {
   timestamps: false
 });
 
 var Room = db.define('Room', {
-  // id: {
-  //   type: Sequelize.INTEGER,
-  //   primaryKey: true
-  // },
-  roomname: Sequelize.STRING
+  roomname: Sequelize.STRING,
 }, {
   timestamps: false
 });
 
 var Message = db.define('Message', {
-  'user_id': {
-    type: Sequelize.INTEGER,
-    references: {
-      model: 'users',
-      key: 'id'
-    } 
-  },
-  'text': Sequelize.STRING,
-  'room_id': {
-    type: Sequelize.INTEGER,
-    references: {
-      model: 'rooms',
-      key: 'id'
-    } 
-  }
+  'text': Sequelize.STRING
 });
 
-//Message.hasMany(User);
-//Message.hasMany(Room);
+User.hasMany(Message, {foreignKey: 'user_id'});
+Message.belongsTo(User, {foreignKey: 'user_id'});
 
-/*Message.create({'username': 'Jean Valjean', text: 'Working?', 'roomname': 'main'}).then(
-  (msg) => { console.log(JSON.stringify(msg)); }
-);*/
+Room.hasMany(Message, {foreignKey: 'room_id'});
+Message.belongsTo(Room, {foreignKey: 'room_id'});
 
-/* Sequelize comes with built in support for promises
- * making it easy to chain asynchronous operations together */
-/*User.create({username: 'Jimbo'}, {ignore: true})
-  .then(User.find({
-    where: {
-      username: 'Baconator'
-    }
-  }).then((user) => { console.log(JSON.stringify(user)); }));*/
+//Message.hasOne(User, { foreignKey: 'user_id' });
+//Message.hasOne(Room, { foreignKey: 'user_id' });
 
-let foreignKeys = {};
-User.find({
-  where: {
-    username: 'Baconator'
-  }
-}).then((user) => {
+//async function postMessage(message) {
+const postMessage = async function(message) {
+  let otherInfo = {};
+  let user = await User.find({where: { username: message.username } });
   if (!user) {
-    return User.create({username: 'Baconator'}, {ignore: true});
-  } else {
-    return user;
+    user = await User.create({ username: message.username });
   }
-}).then((user) => {
-  foreignKeys['user_id'] = user.id;
-});
-/*User.sync()
-  .then(function() {
-    // Now instantiate an object and save it:
-    return 
-  })
-  .then(function() {
-    // Retrieve objects from the database:
-    return User.findAll({ where: {username: 'Jean Valjean'} });
-  })
-  .then(function(users) {
-    users.forEach(function(user) {
-      console.log(user.username + ' exists');
-    });
-    db.close();
-  })
-  .catch(function(err) {
-    // Handle any error in the chain
-    console.error(err);
-    db.close();
-  });
+  let room = await Room.find({where: { roomname: message.roomname } });
+  if (!room) {
+    room = await Room.create({ roomname: message.roomname });
+  }
+  const msg = await Message.create({ 'user_id': user.id, text: message.text, 'room_id': room.id });
+  console.log(JSON.stringify(msg));
+}
 
-Room.sync()
-  .then(function() {
-    // Now instantiate an object and save it:
-    return User.create({roomname: 'lobby'});
-  })
-  .then(function() {
-    // Retrieve objects from the database:
-    return User.findAll({ where: {roomname: 'lobby'} });
-  })
-  .then(function(users) {
-    users.forEach(function(user) {
-      console.log(room.roomname + ' exists');
-    });
-    db.close();
-  })
-  .catch(function(err) {
-    // Handle any error in the chain
-    console.error(err);
-    db.close();
-  });*/
+User.create({username: 'Jimbo'}, {ignore: true}).then(console.log).catch(console.error);
+
+User.findAll({}).then((rooms) => console.log(JSON.stringify(rooms)));

@@ -2,85 +2,43 @@ var db = require('../db');
 
 module.exports = {
   messages: {
-    get: function (callback) {
-      db.query('SELECT users.username, rooms.roomname, messages.text FROM users, rooms, messages WHERE users.id = messages.user_id AND rooms.id = messages.room_id', (err, results) => {
-        if (err) {
-          callback(err, null);
-        }
-        callback(null, results);
-      });
-    }, // a function which produces all the messages
-    post: function (message, callback) {
-      // INSERT IGNORE INTO ...
-      /* message -> {
-        username: user,
-        text: text,
-        roomname: roomname
-      }*/
-      db.query('INSERT IGNORE INTO users (username) VALUES (?)', message.username, (err) => {
-        if (err) {
-          callback(err, null);
-        } else {
-          db.query('INSERT IGNORE INTO rooms (roomname) VALUES (?)', message.roomname, (err) => {
-            if (err) {
-              callback(err, null);
-            } else {
-              db.query('INSERT INTO messages (user_id, room_id, text) VALUES ((SELECT id FROM users WHERE username = ?), (SELECT id FROM rooms WHERE roomname = ?), ?)',
-                [message.username, message.roomname, message.text], (err, result) => {
-                  if (err) {
-                    callback(err, null);
-                  } else {
-                    callback(null, result);
-                  }
-                });
+    get: () => {
+      return db.Message.findAll({include: [db.Room, db.User]})
+        .then((messages) => {
+          return messages.map((message) => {
+            return {
+              username: message.User.username,
+              text: message.text,
+              roomname: message.Room.roomname,
+              createdAt: message.createdAt,
+              updatedAt: message.updatedAt
             }
-          });
-        }
-      });
+          })
+        });
+    }, // a function which produces all the messages
+    post: async (message) => {
+      let user = await db.User.find({where: { username: message.username } });
+      if (!user) {
+        user = await db.User.create({ username: message.username });
+      }
+      let room = await db.Room.find({where: { roomname: message.roomname } });
+      if (!room) {
+        room = await db.Room.create({ roomname: message.roomname });
+      }
+
+      return db.Message.create({ 'user_id': user.id, text: message.text, 'room_id': room.id });
     } // a function which can be used to insert a message into the database
   },
 
   users: {
     // Ditto as above.
-    get: function (callback) {
-      db.query('SELECT users.username FROM users', (err, results) => {
-        if (err) {
-          callback(err, null);
-        } else {
-          callback(null, results);
-        }
-      });
-    },
-    post: function (username, callback) {
-      db.query('INSERT IGNORE INTO users (username) VALUES (?)', username, (err, result) => {
-        if (err) {
-          callback(err, null);
-        } else {
-          callback(null, result);
-        }
-      });
-    }
+    get: () => db.User.findAll({}),
+    post: (username) => db.User.create({username: username}),
   },
 
   rooms: {
-    get: function (callback) {
-      db.query('SELECT rooms.roomname FROM rooms', (err, results) => {
-        if (err) {
-          callback(err, null);
-        } else {
-          callback(null, results);
-        }
-      });
-    },
-    post: function (roomname, callback) {
-      db.query('INSERT IGNORE INTO rooms (roomname) VALUES (?)', roomname, (err, result) => {
-        if (err) {
-          callback(err, null);
-        } else {
-          callback(null, result);
-        }
-      });
-    }
+    get: () => db.Room.findAll({}),
+    post: (roomname) => db.Room.create({roomname: roomname})
   }
 };
 
