@@ -1,18 +1,17 @@
 var MessageView = {
 
-  // <%- sanitizes input whereas <%= does not
   render: _.template(`
       <div class="chat">
-        <div class="username"><%- username %></div>
-        <div><%- text %></div>
+        <!-- we want to pass in the specific friend clicked on... into Friends.js using .call or .apply   -->
+        <div class="username <%- username%>" onclick="Friends.toggleStatus.apply(this)">
+          <%- username%>
+        </div>
+        <div style="color: <%- textcolor%>">
+          <%- text%>
+        </div>
       </div>
-    `),
-
-  renderFriend: _.template(`
-      <div class="chat">
-        <div class="username" style="font-weight:bold"><%- username %></div>
-        <div style="background-color:lightblue"><%- text %></div>
-      </div>
-  `)
+    `)
 
 };
+
+// for escaping, use     - as seen on line 6 and

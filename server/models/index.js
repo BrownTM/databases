@@ -9,6 +9,7 @@ module.exports = {
             return {
               username: message.User.username,
               text: message.text,
+              textcolor: message.User.textcolor,
               roomname: message.Room.roomname,
               createdAt: message.createdAt,
               updatedAt: message.updatedAt
@@ -34,6 +35,7 @@ module.exports = {
     // Ditto as above.
     get: () => db.User.findAll({}),
     post: (username) => db.User.create({username: username}),
+    put: (textcolor) => db.User.update({textcolor})
   },
 
   rooms: {

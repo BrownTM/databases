@@ -24,6 +24,8 @@ CREATE TABLE `users` (
   PRIMARY KEY (`id`)
 );
 
+ALTER TABLE `users` ADD text_color VARCHAR(255);
+
 -- ---
 -- Table 'rooms'
 -- 

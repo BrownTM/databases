@@ -3,6 +3,7 @@ const db = new Sequelize('chat', 'root', 'passkey');
 
 const User = db.define('User', {
   username: Sequelize.STRING,
+  textcolor: Sequelize.STRING,
 }, {
   timestamps: false
 });

@@ -1,35 +1,30 @@
 var FormView = {
 
   $form: $('form'),
-  $message: $('#message'),
+
+  //placeholder variable to store what room we're currently in
+  //$select changes current room
+  currentRoom: 'lobby',
 
   initialize: function() {
     FormView.$form.on('submit', FormView.handleSubmit);
-    $('#rooms select').on('change', FormView.changeRoom);
-    $('#rooms button').on('click', () => {
-      FormView.createRoom(prompt('Enter a room: '));
-    });
+    //Thérèse: reference your code on your computer for what is supposed to go here. it's supposed to be about #rooms
   },
 
   handleSubmit: function(event) {
     // Stop the browser from submitting the form
     event.preventDefault();
 
-    //create jquery event to handle a submit click
-    //user should be able to click submit upon typing
-    //a message, and that msg render onto the chatbox.
-
-    // get the tex from message
-    // call Parse.create with the message
-
-    Parse.create({
+    var message = {
+      text: this[0].value,
       username: App.username,
-      text: FormView.$message.val(),
-      roomname: App.roomname
-    });
+      roomname: FormView.currentRoom
+    };
 
-    // $message.val();
-    console.log('click!');
+    Parse.create(message);
+    $('#chats').empty();
+    App.fetch();
+
   },
 
   setStatus: function(active) {
@@ -37,21 +32,8 @@ var FormView = {
     FormView.$form.find('input[type=submit]').attr('disabled', status);
   },
 
-  //create function that will allow user to change room
-  changeRoom: () => {
-    App.roomname = $('#rooms select').children().filter(':selected').text();
+
+  handleTextcolorChange: function(event) {
+    event.preventDefault();
   },
-
-  createRoom: (room) => {
-    Parse.create({
-      username: App.username,
-      text: `${App.username} created a new room: ${room}`,
-      roomname: room
-    });
-
-    Rooms.add(room);
-    FormView.changeRoom(room);
-
-  }
-
 };

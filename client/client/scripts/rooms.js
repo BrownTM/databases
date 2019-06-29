@@ -1,20 +1,19 @@
 var Rooms = {
 
-  data: [],
+  rooms: {},
 
-  add: (roomname) => {
-    if (roomname === undefined) {
-      return;
+  render: _.template(`
+    <option>
+      <%- room%>
+    </option>
+  `),
+
+  add: function() {
+    var newRoom = prompt('Type a name for your new room');
+    if (rooms[newRoom] === undefined) {
+      rooms[newRoom] = 1;
+      RoomsView.renderRoom(newRoom);
     }
-
-    for (let i = 0; i < Rooms.data.length; i++) {
-      if (Rooms.data[i].roomname === roomname) {
-        return false;
-      }
-    }
-
-    Rooms.data.push({'roomname': roomname, 'encoded': roomname.replace(/\s/g, '%20')});
-    return true;
   }
 
 };

@@ -45,6 +45,19 @@ module.exports = {
         });
     },
 
+    put: () => {
+      models.users.post(req.body.textcolor)
+        .then((result) => {
+          res.status(200);
+          res.type('json');
+          res.send(JSON.stringify(result));
+        })
+        .catch((err) => {
+          res.status(500);
+          res.send('Could not post message.');
+        });
+    },
+
     post: function (req, res) {
       models.users.post(req.body.username)
         .then((result) => {

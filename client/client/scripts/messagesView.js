@@ -5,33 +5,25 @@ var MessagesView = {
   initialize: function() {
   },
 
-  render: function() {
-    let html = '';
-
-    _.each(Messages.data, (message) => {
-      if (message.roomname === App.roomname) {
-        if (Friends.friends[message.username]) {
-          html += MessageView.renderFriend(message);
-        } else {
-          html += MessageView.render(message);
+  takeInAllMessages: function(messages) {
+    Friends.addUsers(messages);
+    RoomsView.filterRooms(messages);
+    messages.forEach((message) => {
+      if (message.username !== undefined && message.text !== undefined) {
+        if (message.roomname === undefined) {
+          message.roomname = 'lobby';
         }
+        RoomsView.filterMessagesforEachRoom(message);
       }
-    });
-    //iterate through length of usernames,
-    //if !username, return null;
-    //return username
-
-    this.$chats.html(html);
-    //this.$chats.children().filter('.username').on('click', Friends.toggleStatus);
-    $('#chats .username').on('click', (event) => {
-      Friends.toggleStatus(event.target.innerHTML);
     });
   },
 
   renderMessage: function(message) {
-    this.$chats.html(MessageView.render(message));
-    //this.$chats.children().filter('.username').on('click', Friends.toggleStatus);
-    $('#chats .username').on('click', (event) => { Friends.toggleStatus(event); });
+    var $message = $(MessageView.render(message));
+    if (Friends.usersStorage[message.username] === true) {
+      $message.addClass("friend");
+    }
+    $message.appendTo(MessagesView.$chats);
   }
 
 };
